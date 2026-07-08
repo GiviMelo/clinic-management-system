@@ -27,6 +27,7 @@ typedef struct{
 
 // print the welcome message
 void exibirBoasVindas(){
+	system("clear");
 	printf("\n ===== SISTEMA DE CADASTRO DE CLIENTES =====\n");
 	printf("Desenvolvido por Lucas Givisiez\n\n");
 }
@@ -34,14 +35,15 @@ void exibirBoasVindas(){
 
 // printf the options menu
 void exibirMenu(){
+	printf("============ MENU PRINCIPAL ============");
 	printf("\nEscolha uma acao:\n");
 	printf("(Digite o numero da opcao para selecionar)\n");
 	printf("1 - Novo cliente\n");
 	printf("2 - Modificar cliente\n");
 	printf("3 - Ver cliente\n");
 	printf("4 - Deletar cliente\n");
-
 	printf("0 - Sair\n");
+	printf("========================================\n");
 } 
 
 
@@ -120,6 +122,11 @@ int calcId(){
 // result: the full path that can be passed to fopen ("patients_data/1")
 void buildPath(char result[100], char filename[100]){
 	sprintf(result, "patients_data/%s", filename);
+}
+
+void pausar(){
+	printf("\nPressione enter para continuar...");
+	getchar(); getchar();
 }
 
 // search and store the id of the selected patient through 'allClients.txt' file
@@ -206,6 +213,7 @@ void copyAllClients(FILE** registro, FILE** copia){
 
 // creates a new patient file
 void novoCliente(Cliente *temp){
+	system("clear");
 	defaultCliente(temp);	//calls the 'constructor'
 
 	int id = calcId(); //calculates the new patient's id
@@ -257,16 +265,20 @@ void novoCliente(Cliente *temp){
 	fclose(registro);
 
 	printf("Cliente registrado com sucesso\n");
+	pausar();
 }
 
 // display a specific patient data
 void verCliente(){
+	system("clear");
+	
 	char idCliente[50];
 	char linha[50];
 	int num_linha = 0;
 	int opcao = -1;
 	
 	//display and ask the user to select a patient to see his info
+	printf("Qual cliente deseja consultar?\n");
 	showAllClients();
 	selectClient(idCliente);
 
@@ -275,16 +287,23 @@ void verCliente(){
 	readClient(&data_vector, idCliente);
 
 	//goes through the vector and display every patient's info
-	printf("ID: %s\n", data_vector[0]);
-	printf("Nome: %s\n", data_vector[1]);
-	printf("Idade: %s\n", data_vector[2]);
-	printf("Telefone: %s\n", data_vector[3]);
-	printf("Email: %s\n", data_vector[4]);
+	printf("=============================\n");
+	printf("	DADOS DO PACIENTE	\n");
+	printf("=============================\n");
+	printf("ID: 		%s\n", data_vector[0]);
+	printf("Nome: 		%s\n", data_vector[1]);
+	printf("Idade: 		%s\n", data_vector[2]);
+	printf("Telefone: 	%s\n", data_vector[3]);
+	printf("Email: 		%s\n", data_vector[4]);
+	printf("=============================\n");
 
+	pausar();
 }
 
 // modify a information of a specific patient
 void modificarCliente(){
+	system("clear");
+
 	char idCliente[50];
 	char buffer[50];
 	int opcao = -1;
@@ -406,21 +425,35 @@ void modificarCliente(){
 	fprintf(arquivo, "%d\n", temp.idade);
 	fprintf(arquivo, "%s\n", temp.telefone);
 	fprintf(arquivo, "%s\n", temp.email);
-	
+
 	fclose(arquivo);
+
+	printf("Campo alterado com sucesso\n");
+	pausar();
 }
 
 
 // deletes a patient from the system
 void deletarCliente(){
+	system("clear");
+
 	char idCliente[50];
 	char buffer[50];
 	int num_linha = 0;
 
 	//display and ask what patient the user wants to delete
-	printf("Qual cliente deseja deletar: ");
+	printf("Qual cliente deseja deletar?\n ");
 	showAllClients();
 	selectClient(idCliente);
+
+	char confirmar;
+	printf("Tem certeza que deseja deletar? (S/N)\n");
+	scanf(" %c", &confirmar);
+	if(confirmar != 's' && confirmar != 'S'){
+		printf("Cancelado\n");
+		pausar();
+		return;
+	}
 
 	//build the path for the selected patient's file
 	char path[100];
@@ -431,7 +464,6 @@ void deletarCliente(){
 		printf("Erro ao deletar arquivo");
 		return;
 	} 
-	printf("Cliente deletado com sucesso\n");
 
 	//delete the selected patient from the general register
 	FILE* arquivo;
@@ -467,10 +499,12 @@ void deletarCliente(){
 		num_linha++;
 	}
 
-
 	fclose(arquivo);
 	fclose(copia);
 	remove("patients_data/allClientsTEMP.txt");
+
+	printf("Paciente deletado com sucesso\n");
+	pausar();
 }
 
 int main(){
@@ -484,12 +518,14 @@ int main(){
 
 	//if the user doesnt select the option 'sair'/0 -- the program will run on loop and display the options menu
 	while(opcao != 0){
+		system("clear");
 		exibirMenu();
 
 		scanf("%d", &opcao);
 
 		switch (opcao) {
 			case 0:
+				system("clear");
 				printf("Obrigado por utilizar!\n");
 				break;
 
@@ -507,7 +543,6 @@ int main(){
 
 			case 4:
 				deletarCliente();
-				printf("Em implementacao\n");
 				break;
 	
 			default:
