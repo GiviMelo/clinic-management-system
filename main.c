@@ -41,7 +41,7 @@ void showAllClients(){
 	int num_linha = 0;
 	int countClientes = 1;
 	FILE *arquivo;
-	arquivo = fopen("allClients.txt", "r");
+	arquivo = fopen("patients_data/allClients.txt", "r");
 	if(arquivo == NULL) {
 		printf("Erro ao manipular arquivo\n");
 		return;
@@ -71,7 +71,7 @@ int calcId(){
 	int lastId, newId;
 	
 	FILE *arquivo;
-	arquivo = fopen("lastId.txt", "r");
+	arquivo = fopen("patients_data/lastId.txt", "r");
 	if(arquivo == NULL){
 		printf("Erro ao manipular arquivo de gerenciamento de ids\n");
 		return -1;
@@ -82,7 +82,7 @@ int calcId(){
 
 	newId = lastId+1;
 
-	arquivo = fopen("lastId.txt", "w");
+	arquivo = fopen("patients_data/lastId.txt", "w");
 	if(arquivo == NULL){
 		printf("Erro ao manipular arquivo de gerenciamento de ids\n");
 		return -1;
@@ -93,13 +93,17 @@ int calcId(){
 	return newId;
 }
 
+void buildPath(char result[100], char filename[100]){
+	sprintf(result, "patients_data/%s", filename);
+}
+
 void selectClient(char idCliente[50]){
 	char linha[50];
 	int num_linha = 0;
 	int opcao = -1;
 
 	FILE *arquivo;
-	arquivo = fopen("allClients.txt", "r");
+	arquivo = fopen("patients_data/allClients.txt", "r");
 	if(arquivo == NULL) {
 		printf("Erro ao manipular arquivo\n");
 		return;
@@ -125,8 +129,11 @@ void selectClient(char idCliente[50]){
 void readClient(char*** data_vector, char dadosCliente[50]){
 	char buffer[50];
 
+	char path[100];
+	buildPath(path, dadosCliente);
+
 	FILE* arquivo;
-	arquivo = fopen(dadosCliente, "r");
+	arquivo = fopen(path, "r");
 	if(arquivo == NULL){
 		printf("Erro ao manipular arquivo");
 		return;
@@ -146,8 +153,8 @@ void readClient(char*** data_vector, char dadosCliente[50]){
 void copyAllClients(FILE** registro, FILE** copia){
 	char buffer[50];
 
-	*registro = fopen("allClients.txt", "r");
-	*copia = fopen("allClientsTEMP.txt", "w");
+	*registro = fopen("patients_data/allClients.txt", "r");
+	*copia = fopen("patients_data/allClientsTEMP.txt", "w");
 	if(*registro == NULL || *copia == NULL){
 		printf("Erro ao manipular arquivos");
 		return;
@@ -180,14 +187,17 @@ void novoCliente(Cliente *temp){
 	printf("Informe o email do cliente: ");
 	scanf(" %49[^\n]", temp->email);
 
+	char path[100];
+	buildPath(path, idString);
+
 	FILE *arquivo;
 	FILE *registro;
-	arquivo = fopen(idString, "w");
+	arquivo = fopen(path, "w");
 	if(arquivo == NULL) {
 		printf("Erro ao manipular arquivo\n");
 		return;
 	}
-	registro = fopen("allClients.txt", "a");
+	registro = fopen("patients_data/allClients.txt", "a");
 	if(registro == NULL){
 		printf("Erro ao manipular arquivo\n");
 		return;
@@ -216,11 +226,14 @@ void verCliente(){
 	int opcao = -1;
 	
 	showAllClients();
-
 	selectClient(idCliente);
+
+	printf("DEBUG: idCliente = [%s]\n", idCliente);
 
 	char** data_vector;
 	readClient(&data_vector, idCliente);
+
+	printf("DEBUG: after readClient\n");
 
 	printf("ID: %s\n", data_vector[0]);
 	printf("Nome: %s\n", data_vector[1]);
@@ -299,8 +312,8 @@ void modificarCliente(){
 
 
 		int num_linha = 0;
-		registro = fopen("allClients.txt", "w");
-		copia = fopen("allClientsTEMP.txt", "r");
+		registro = fopen("patients_data/allClients.txt", "w");
+		copia = fopen("patients_data/allClientsTEMP.txt", "r");
 		if(registro == NULL || copia == NULL){
 			printf("Erro ao manipular arquivos");
 			return;
@@ -329,14 +342,17 @@ void modificarCliente(){
 		fclose(registro);
 		fclose(copia);
 
-		if(remove("allClientsTEMP.txt") != 0){
+		if(remove("patients_data/allClientsTEMP.txt") != 0){
 			printf("Erro ao deletar arquivo temporario");
 			return;
 		}
 	}
 
+	char path[100];
+	buildPath(path, idCliente);
+
 	FILE* arquivo;
-	arquivo = fopen(idCliente, "w");
+	arquivo = fopen(path, "w");
 	if(arquivo == NULL){
 		printf("Erro ao manipular arquivo\n");
 		return;
@@ -360,7 +376,10 @@ void deletarCliente(){
 	showAllClients();
 	selectClient(idCliente);
 
-	if(remove(idCliente) != 0){
+	char path[100];
+	buildPath(path, idCliente);
+
+	if(remove(path) != 0){
 		printf("Erro ao deletar arquivo");
 		return;
 	} 
@@ -370,8 +389,8 @@ void deletarCliente(){
 	FILE* copia;
 	copyAllClients(&arquivo, &copia);
 
-	arquivo = fopen("allClients.txt", "w");
-	copia = fopen("allClientsTEMP.txt", "r");
+	arquivo = fopen("patients_data/allClients.txt", "w");
+	copia = fopen("patients_data/allClientsTEMP.txt", "r");
 	if(arquivo == NULL || copia == NULL){
 		printf("Erro ao manipular arquivos");
 		return;
@@ -400,7 +419,7 @@ void deletarCliente(){
 
 	fclose(arquivo);
 	fclose(copia);
-	remove("allClientsTEMP.txt");
+	remove("patients_data/allClientsTEMP.txt");
 }
 
 int main(){
