@@ -7,20 +7,29 @@
 
 // STRUCTS DECLARATION
 
+// defines the struct data
+typedef struct{
+	int dia;
+	int mes;
+	int ano;
+} Data;
+
 // defines the struct consulta
 typedef struct{
-
+	Data data;
+	char descricao[256];
+	int id_paciente;
 } Consulta;
 
 
-// defines the struct cliente
+// defines the struct paciente
 typedef struct{
 	int id;
 	char nome[50];
 	int idade;
 	char telefone[20];
 	char email[50];
-} Cliente;
+} Paciente;
 
 
 // SCREEN PRINTING FUNCTIONS
@@ -28,7 +37,7 @@ typedef struct{
 // print the welcome message
 void exibirBoasVindas(){
 	system("clear");
-	printf("\n ===== SISTEMA DE CADASTRO DE CLIENTES =====\n");
+	printf("\n ===== SISTEMA DE CADASTRO DE PACIENTES =====\n");
 	printf("Desenvolvido por Lucas Givisiez\n\n");
 }
 
@@ -38,33 +47,33 @@ void exibirMenu(){
 	printf("============ MENU PRINCIPAL ============");
 	printf("\nEscolha uma acao:\n");
 	printf("(Digite o numero da opcao para selecionar)\n");
-	printf("1 - Novo cliente\n");
-	printf("2 - Modificar cliente\n");
-	printf("3 - Ver cliente\n");
-	printf("4 - Deletar cliente\n");
+	printf("1 - Novo paciente\n");
+	printf("2 - Modificar paciente\n");
+	printf("3 - Ver paciente\n");
+	printf("4 - Deletar paciente\n");
 	printf("0 - Sair\n");
 	printf("========================================\n");
 } 
 
 
 // show every single patient registered
-void showAllClients(){
+void showAllPatients(){
 	char linha[50];
 	int num_linha = 0;
-	int countClientes = 1;
+	int countPatients = 1;
 	FILE *arquivo;
-	arquivo = fopen("patients_data/allClients.txt", "r");
+	arquivo = fopen("patients_data/allPatients.txt", "r");
 	if(arquivo == NULL) {
 		printf("Erro ao manipular arquivo\n");
 		return;
 	}
 
-	// as the patients names are stored on every odd line on 'allClients.txt', it checks if the line read is even, if so, it prints on the screen and increment the 			number of patients registered (to show before each patient)
-	printf(" ===== TODOS OS CLIENTES ===== \n");
+	// as the patients names are stored on every odd line on 'allPatients.txt', it checks if the line read is even, if so, it prints on the screen and increment the 			number of patients registered (to show before each patient)
+	printf(" ===== TODOS OS PACIENTES ===== \n");
 	while(fgets(linha, 50, arquivo) != NULL){
 		if(num_linha%2 != 0){
-			printf("%d) %s", countClientes, linha);
-			countClientes++;
+			printf("%d) %s", countPatients, linha);
+			countPatients++;
 		}
 		num_linha++;
 	}
@@ -74,7 +83,7 @@ void showAllClients(){
 // AUX FUNCTIONS
 
 // like a c++ constructor, if defines 'default' values each time a new patient file is created
-void defaultCliente(Cliente *padrao){
+void defaultPaciente(Paciente *padrao){
 	padrao->id = 000;
 	strcpy(padrao->nome, "Nao informado");
 	padrao->idade = 000;
@@ -118,7 +127,7 @@ int calcId(){
 }
 
 // builds the full path for a file inside the 'patients_data' folder
-// filename: the name of the file ("1", "allClients.txt")
+// filename: the name of the file ("1", "allPatients.txt")
 // result: the full path that can be passed to fopen ("patients_data/1")
 void buildPath(char result[100], char filename[100]){
 	sprintf(result, "patients_data/%s", filename);
@@ -129,29 +138,29 @@ void pausar(){
 	getchar(); getchar();
 }
 
-// search and store the id of the selected patient through 'allClients.txt' file
-void selectClient(char idCliente[50]){
+// search and store the id of the selected patient through 'allPatients.txt' file
+void selectPatient(char idPaciente[50]){
 	char linha[50];
 	int num_linha = 0;
 	int opcao = -1;
 
 	//open the register of every single patient
 	FILE *arquivo;
-	arquivo = fopen("patients_data/allClients.txt", "r");
+	arquivo = fopen("patients_data/allPatients.txt", "r");
 	if(arquivo == NULL) {
 		printf("Erro ao manipular arquivo\n");
 		return;
 	}
 
 	//ask and store user's selection
-	printf("\nInforme o numero do cliente a ser consultado: ");
+	printf("\nInforme o numero do paciente a ser consultado: ");
 	scanf(" %d", &opcao);
 
-	//every patient's id is stored on even lines ('allClients.txt'), so it checks if the user's selection matches with the id on that specific line
+	//every patient's id is stored on even lines ('allPatients.txt'), so it checks if the user's selection matches with the id on that specific line
 	while(fgets(linha, 50, arquivo) != NULL){
-		if(2*(opcao-1) == num_linha){		//if it matches, copy the id on the line to the variable 'idCliente'
-			strcpy(idCliente, linha);
-			idCliente[strcspn(idCliente, "\n")] = '\0';			//replace the "\n" on the end of the string with '\0'
+		if(2*(opcao-1) == num_linha){		//if it matches, copy the id on the line to the variable 'idPaciente'
+			strcpy(idPaciente, linha);
+			idPaciente[strcspn(idPaciente, "\n")] = '\0';			//replace the "\n" on the end of the string with '\0'
 			break;
 		}
 		num_linha++;
@@ -162,13 +171,13 @@ void selectClient(char idCliente[50]){
 
 // read and stores the data of a specific patient
 // data_vector is where every information of the patient is gonna be stored (each index willl hold one field)
-// dadosCliente is the patient's file name
-void readClient(char*** data_vector, char dadosCliente[50]){
+// dadosPaciente is the patient's file name
+void readPatient(char*** data_vector, char dadosPaciente[50]){
 	char buffer[50];
 
 	//builds the path for the file inside 'patients_data'
 	char path[100];
-	buildPath(path, dadosCliente);
+	buildPath(path, dadosPaciente);
 
 	//open the file in read mode
 	FILE* arquivo;
@@ -192,11 +201,11 @@ void readClient(char*** data_vector, char dadosCliente[50]){
 }
 
 // makes a copy of the register cointaining every patient to a temporary file
-void copyAllClients(FILE** registro, FILE** copia){
+void copyAllPatients(FILE** registro, FILE** copia){
 	char buffer[50];
 
-	*registro = fopen("patients_data/allClients.txt", "r");
-	*copia = fopen("patients_data/allClientsTEMP.txt", "w");
+	*registro = fopen("patients_data/allPatients.txt", "r");
+	*copia = fopen("patients_data/allPatientsTEMP.txt", "w");
 	if(*registro == NULL || *copia == NULL){
 		printf("Erro ao manipular arquivos");
 		return;
@@ -212,25 +221,25 @@ void copyAllClients(FILE** registro, FILE** copia){
 // MENU FUNCTIONS
 
 // creates a new patient file
-void novoCliente(Cliente *temp){
+void novoPaciente(Paciente *temp){
 	system("clear");
-	defaultCliente(temp);	//calls the 'constructor'
+	defaultPaciente(temp);	//calls the 'constructor'
 
 	int id = calcId(); //calculates the new patient's id
 	char idString[20];
 	sprintf(idString, "%d", id); //transform the id(int) into a string
 
 	//ask the user for the patient's information
-	printf("Informe o nome do cliente: ");
+	printf("Informe o nome do paciente: ");
 	scanf(" %49[^\n]", temp->nome);
 
-	printf("Informe a idade do cliente: ");
+	printf("Informe a idade do paciente: ");
 	scanf(" %d", &temp->idade);
 
-	printf("Informe o telefone do cliente (sem espacos ou caracteres especiais): ");
+	printf("Informe o telefone do paciente (sem espacos ou caracteres especiais): ");
 	scanf(" %19[^\n]", temp->telefone);
 	
-	printf("Informe o email do cliente: ");
+	printf("Informe o email do paciente: ");
 	scanf(" %49[^\n]", temp->email);
 
 	//builds the path for the new file
@@ -244,7 +253,7 @@ void novoCliente(Cliente *temp){
 		printf("Erro ao manipular arquivo\n");
 		return;
 	}
-	registro = fopen("patients_data/allClients.txt", "a");		//open the general register in append mode
+	registro = fopen("patients_data/allPatients.txt", "a");		//open the general register in append mode
 	if(registro == NULL){
 		printf("Erro ao manipular arquivo\n");
 		return;
@@ -264,27 +273,27 @@ void novoCliente(Cliente *temp){
 	fclose(arquivo);
 	fclose(registro);
 
-	printf("Cliente registrado com sucesso\n");
+	printf("Paciente registrado com sucesso\n");
 	pausar();
 }
 
 // display a specific patient data
-void verCliente(){
+void verPaciente(){
 	system("clear");
 	
-	char idCliente[50];
+	char idPaciente[50];
 	char linha[50];
 	int num_linha = 0;
 	int opcao = -1;
 	
 	//display and ask the user to select a patient to see his info
-	printf("Qual cliente deseja consultar?\n");
-	showAllClients();
-	selectClient(idCliente);
+	printf("Qual paciente deseja consultar?\n");
+	showAllPatients();
+	selectPatient(idPaciente);
 
 	//read and store the selected patient's info on a vector
 	char** data_vector;
-	readClient(&data_vector, idCliente);
+	readPatient(&data_vector, idPaciente);
 
 	//goes through the vector and display every patient's info
 	printf("=============================\n");
@@ -301,29 +310,29 @@ void verCliente(){
 }
 
 // modify a information of a specific patient
-void modificarCliente(){
+void modificarPaciente(){
 	system("clear");
 
-	char idCliente[50];
+	char idPaciente[50];
 	char buffer[50];
 	int opcao = -1;
-	Cliente temp;
+	Paciente temp;
 
 	//display and ask user to select a patient to modify
-	printf("\nQual cliente deseja modificar?\n");
-	showAllClients();
-	selectClient(idCliente);
+	printf("\nQual paciente deseja modificar?\n");
+	showAllPatients();
+	selectPatient(idPaciente);
 
 	//read and store the selected patient's info on a vector
-	char** client_data;
-	readClient(&client_data, idCliente);
+	char** patient_data;
+	readPatient(&patient_data, idPaciente);
 
 	//transform each field into the right variable type
-	sscanf(client_data[0], "%d", &temp.id);
-	sscanf(client_data[1], "%s", temp.nome);
-	sscanf(client_data[2], "%d", &temp.idade);
-	sscanf(client_data[3], "%s", temp.telefone);
-	sscanf(client_data[4], "%s", temp.email);
+	sscanf(patient_data[0], "%d", &temp.id);
+	sscanf(patient_data[1], "%s", temp.nome);
+	sscanf(patient_data[2], "%d", &temp.idade);
+	sscanf(patient_data[3], "%s", temp.telefone);
+	sscanf(patient_data[4], "%s", temp.email);
 
 	//ask the user whats gonna be changed
 	printf("\nO que deseja alterar?\n");
@@ -362,12 +371,12 @@ void modificarCliente(){
 		FILE* copia;
 		
 		//make a copy of the general register
-		copyAllClients(&registro, &copia);
+		copyAllPatients(&registro, &copia);
 
 		//open the general register in write mode and the copy in read mode
 		int num_linha = 0;
-		registro = fopen("patients_data/allClients.txt", "w");
-		copia = fopen("patients_data/allClientsTEMP.txt", "r");
+		registro = fopen("patients_data/allPatients.txt", "w");
+		copia = fopen("patients_data/allPatientsTEMP.txt", "r");
 		if(registro == NULL || copia == NULL){
 			printf("Erro ao manipular arquivos");
 			return;
@@ -376,13 +385,13 @@ void modificarCliente(){
 		//checks if the read line is an even line (contains the id's)
 		int flag = 0;
 		while(fgets(buffer, 50, copia) != NULL){
-			//if so, copies the id into a temporary buffer and compares if it matches the id of the selected client
+			//if so, copies the id into a temporary buffer and compares if it matches the id of the selected patient
 			if(num_linha%2 == 0){
 				char temp_buffer[50];
 				strcpy(temp_buffer, buffer);
 				temp_buffer[strcspn(temp_buffer, "\n")] = '\0';
 				//if the id matches, set the flag equals to 1
-				if(strcmp(temp_buffer, idCliente) == 0){
+				if(strcmp(temp_buffer, idPaciente) == 0){
 					flag = 1;
 				}
 			}
@@ -403,7 +412,7 @@ void modificarCliente(){
 		fclose(copia);
 
 		//deletes the temporary file
-		if(remove("patients_data/allClientsTEMP.txt") != 0){
+		if(remove("patients_data/allPatientsTEMP.txt") != 0){
 			printf("Erro ao deletar arquivo temporario");
 			return;
 		}
@@ -411,7 +420,7 @@ void modificarCliente(){
 
 	//rewrite every field on the patient's file
 	char path[100];
-	buildPath(path, idCliente);
+	buildPath(path, idPaciente);
 
 	FILE* arquivo;
 	arquivo = fopen(path, "w");
@@ -434,17 +443,17 @@ void modificarCliente(){
 
 
 // deletes a patient from the system
-void deletarCliente(){
+void deletarPaciente(){
 	system("clear");
 
-	char idCliente[50];
+	char idPaciente[50];
 	char buffer[50];
 	int num_linha = 0;
 
 	//display and ask what patient the user wants to delete
-	printf("Qual cliente deseja deletar?\n ");
-	showAllClients();
-	selectClient(idCliente);
+	printf("Qual paciente deseja deletar?\n ");
+	showAllPatients();
+	selectPatient(idPaciente);
 
 	char confirmar;
 	printf("Tem certeza que deseja deletar? (S/N)\n");
@@ -457,7 +466,7 @@ void deletarCliente(){
 
 	//build the path for the selected patient's file
 	char path[100];
-	buildPath(path, idCliente);
+	buildPath(path, idPaciente);
 
 	//delete the patient's file
 	if(remove(path) != 0){
@@ -468,10 +477,10 @@ void deletarCliente(){
 	//delete the selected patient from the general register
 	FILE* arquivo;
 	FILE* copia;
-	copyAllClients(&arquivo, &copia); 	//makes a temporary copy of the general register
+	copyAllPatients(&arquivo, &copia); 	//makes a temporary copy of the general register
 
-	arquivo = fopen("patients_data/allClients.txt", "w");
-	copia = fopen("patients_data/allClientsTEMP.txt", "r");
+	arquivo = fopen("patients_data/allPatients.txt", "w");
+	copia = fopen("patients_data/allPatientsTEMP.txt", "r");
 	if(arquivo == NULL || copia == NULL){
 		printf("Erro ao manipular arquivos");
 		return;
@@ -480,12 +489,12 @@ void deletarCliente(){
 	//read every line from the copy
 	int flag = 0;
 	while(fgets(buffer, 50, copia) != NULL){
-		//checks if the read line is even (contains the id's) and check if the id matches the selected client
+		//checks if the read line is even (contains the id's) and check if the id matches the selected patient
 		if(num_linha%2 == 0){
 			char temp_buffer[50];
 			strcpy(temp_buffer, buffer);
 			temp_buffer[strcspn(temp_buffer, "\n")] = '\0';
-			if(strcmp(temp_buffer, idCliente) == 0){	//if so, set the flag to 1
+			if(strcmp(temp_buffer, idPaciente) == 0){	//if so, set the flag to 1
 				flag = 1;
 			} else {		//if not, copy the line from the temporary file
 				fprintf(arquivo, "%s", buffer);
@@ -501,7 +510,7 @@ void deletarCliente(){
 
 	fclose(arquivo);
 	fclose(copia);
-	remove("patients_data/allClientsTEMP.txt");
+	remove("patients_data/allPatientsTEMP.txt");
 
 	printf("Paciente deletado com sucesso\n");
 	pausar();
@@ -510,15 +519,14 @@ void deletarCliente(){
 int main(){
 
 	int opcao = -1;
-	Cliente temp;
+	Paciente temp;
 	int continuar = -1;
 
-	//displays the welcome section
-	exibirBoasVindas();
 
 	//if the user doesnt select the option 'sair'/0 -- the program will run on loop and display the options menu
 	while(opcao != 0){
 		system("clear");
+		exibirBoasVindas();
 		exibirMenu();
 
 		scanf("%d", &opcao);
@@ -530,19 +538,19 @@ int main(){
 				break;
 
 			case 1:
-				novoCliente(&temp);
+				novoPaciente(&temp);
 				break;
 
 			case 2:
-				modificarCliente();
+				modificarPaciente();
 				break;
 
 			case 3:
-				verCliente();
+				verPaciente();
 				break;
 
 			case 4:
-				deletarCliente();
+				deletarPaciente();
 				break;
 	
 			default:
