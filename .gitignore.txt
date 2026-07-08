@@ -1,0 +1,12 @@
+.DS_Store
+a.out
+main
+main.dSYM/
+allClients.txt
+lastId.txt
+data/
+0
+1
+2
+3
+10
