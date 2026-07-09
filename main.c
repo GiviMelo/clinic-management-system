@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define capacity 5
 
@@ -8,15 +9,16 @@
 // STRUCTS DECLARATION
 
 // defines the struct data
-typedef struct{
-	int dia;
-	int mes;
-	int ano;
-} Data;
+// typedef struct{
+// 	int dia;
+// 	int mes;
+// 	int ano;
+// } Data;
 
 // defines the struct consulta
 typedef struct{
-	Data data;
+	//Data data;
+	char data[50];
 	char descricao[256];
 	int id_paciente;
 } Consulta;
@@ -32,7 +34,9 @@ typedef struct{
 } Paciente;
 
 
-// SCREEN PRINTING FUNCTIONS
+/*
+	SCREEN PRINTING FUNCTIONS
+*/
 
 // print the welcome message
 void exibirBoasVindas(){
@@ -51,6 +55,8 @@ void exibirMenu(){
 	printf("2 - Modificar paciente\n");
 	printf("3 - Ver paciente\n");
 	printf("4 - Deletar paciente\n");
+	printf("5 - Adicionar consulta\n");
+	printf("6 - Ver consultas\n");
 	printf("0 - Sair\n");
 	printf("========================================\n");
 } 
@@ -80,7 +86,9 @@ void showAllPatients(){
 }
 
 
-// AUX FUNCTIONS
+/*
+	AUX FUNCTIONS
+*/
 
 // like a c++ constructor, if defines 'default' values each time a new patient file is created
 void defaultPaciente(Paciente *padrao){
@@ -91,6 +99,16 @@ void defaultPaciente(Paciente *padrao){
 	strcpy(padrao->email, "Nao informado");
 }
 
+void defaultConsulta(Consulta *padrao){
+	// padrao->data.dia = 00;
+	// padrao->data.mes == 00;
+	// padrao->data.ano = 0000;
+	strcpy(padrao->data, "00/00/0000");
+
+	strcpy(padrao->descricao, "Nao informado\n");
+
+	padrao->id_paciente = 000;
+}
 
 // calculates the new patient's id
 // each patient have an exclusive id
@@ -126,11 +144,16 @@ int calcId(){
 	return newId;
 }
 
+
 // builds the full path for a file inside the 'patients_data' folder
 // filename: the name of the file ("1", "allPatients.txt")
 // result: the full path that can be passed to fopen ("patients_data/1")
 void buildPath(char result[100], char filename[100]){
 	sprintf(result, "patients_data/%s", filename);
+}
+
+void buildConsultPath(char result[100], char filename[100]){
+	sprintf(result, "consults_data/consults_%s", filename);
 }
 
 void pausar(){
@@ -218,7 +241,94 @@ void copyAllPatients(FILE** registro, FILE** copia){
 	fclose(*copia);
 }
 
-// MENU FUNCTIONS
+
+/*
+	CONSULTS FUNCTIONS
+*/
+
+void novaConsulta(Consulta* c){
+	system("clear");
+	defaultConsulta(c);
+
+	char idPaciente[20];
+
+	printf("Deseja adicionar uma consulta a qual cliente?\n");
+	showAllPatients();
+	selectPatient(idPaciente);
+
+	printf("Informe a data da consulta: ");
+	scanf(" %s", c->data);
+	printf("Descricao da consulta: ");
+	scanf(" %255[^\n]", c->descricao);
+
+	char path[100];
+	buildConsultPath(path, idPaciente);
+
+	FILE* arquivo;
+	arquivo = fopen(path, "a");
+	if(arquivo == NULL){
+		printf("Erro ao manipular arquivo");
+		return;
+	}
+
+	fprintf(arquivo, "%s\n", c->data);
+	fprintf(arquivo, "%s\n", c->descricao);
+
+
+	fclose(arquivo);
+
+	printf("Consulta adicionada com sucesso\n");
+	pausar();
+}
+
+void verConsultas(){
+	system("clear");
+
+	char idPaciente[50];
+	char buffer[256];
+	int total_linhas = 0;
+	int display_linhas = 1;
+
+	printf("Deseja ver as consultas de que paciente?\n");
+	showAllPatients();
+	selectPatient(idPaciente);
+
+	char path[100];
+	buildConsultPath(path, idPaciente);
+
+	FILE* arquivo;
+	arquivo = fopen(path, "r");
+	if(arquivo == NULL){
+		printf("Erro ao manipular arquivo");
+		return;
+	}
+
+	if(fgets(buffer, 256, arquivo) == NULL){
+		printf("Nenhuma consulta registrada ainda\n");
+		pausar();
+		fclose(arquivo);
+		return;
+	}
+
+	while(fgets(buffer, 256, arquivo) != NULL){
+		if(total_linhas%2 == 0){
+			printf("\n ----- CONSULTA %d ----- \n", display_linhas);
+			printf("Data: 		%s\n", buffer);
+			display_linhas++;
+		} else {
+			printf("Descricao: 	%s\n", buffer);
+		}
+		total_linhas++;
+	}
+	
+
+	pausar();
+}
+
+
+/*
+	PATIENT MANAGEMENT FUNCTIONS
+*/
 
 // creates a new patient file
 void novoPaciente(Paciente *temp){
@@ -228,6 +338,7 @@ void novoPaciente(Paciente *temp){
 	int id = calcId(); //calculates the new patient's id
 	char idString[20];
 	sprintf(idString, "%d", id); //transform the id(int) into a string
+	temp->id = id;
 
 	//ask the user for the patient's information
 	printf("Informe o nome do paciente: ");
@@ -273,6 +384,17 @@ void novoPaciente(Paciente *temp){
 	fclose(arquivo);
 	fclose(registro);
 
+	char consultPath[100];
+	buildConsultPath(consultPath, idString);
+
+	FILE* consult;
+	consult = fopen(consultPath, "a");
+	if(consult == NULL){
+		printf("Erro ao manipular arquivo");
+		return;
+	}
+	fclose(consult);
+
 	printf("Paciente registrado com sucesso\n");
 	pausar();
 }
@@ -283,8 +405,6 @@ void verPaciente(){
 	
 	char idPaciente[50];
 	char linha[50];
-	int num_linha = 0;
-	int opcao = -1;
 	
 	//display and ask the user to select a patient to see his info
 	printf("Qual paciente deseja consultar?\n");
@@ -441,7 +561,6 @@ void modificarPaciente(){
 	pausar();
 }
 
-
 // deletes a patient from the system
 void deletarPaciente(){
 	system("clear");
@@ -516,12 +635,14 @@ void deletarPaciente(){
 	pausar();
 }
 
+
+
 int main(){
 
 	int opcao = -1;
-	Paciente temp;
 	int continuar = -1;
-
+	Paciente temp;
+	Consulta c;
 
 	//if the user doesnt select the option 'sair'/0 -- the program will run on loop and display the options menu
 	while(opcao != 0){
@@ -552,7 +673,15 @@ int main(){
 			case 4:
 				deletarPaciente();
 				break;
-	
+
+			case 5:
+				novaConsulta(&c);
+				break;
+
+			case 6:
+				verConsultas();
+				break;
+
 			default:
 				printf("Opcao invalida\n");
 				break;
