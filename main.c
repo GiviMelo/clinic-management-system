@@ -3,8 +3,8 @@
 #include <string.h>
 #include <time.h>
 
-#define capacity 5
-
+#define patients_fields 5
+#define consults_fields 2
 
 // STRUCTS DECLARATION
 
@@ -45,6 +45,10 @@ void exibirBoasVindas(){
 	printf("Desenvolvido por Lucas Givisiez\n\n");
 }
 
+void pausar(){
+	printf("\nPressione enter para continuar...");
+	getchar(); getchar();
+}
 
 // printf the options menu
 void exibirMenu(){
@@ -84,7 +88,6 @@ void showAllPatients(){
 		num_linha++;
 	}
 }
-
 
 /*
 	AUX FUNCTIONS
@@ -156,11 +159,6 @@ void buildConsultPath(char result[100], char filename[100]){
 	sprintf(result, "consults_data/consults_%s", filename);
 }
 
-void pausar(){
-	printf("\nPressione enter para continuar...");
-	getchar(); getchar();
-}
-
 // search and store the id of the selected patient through 'allPatients.txt' file
 void selectPatient(char idPaciente[50]){
 	char linha[50];
@@ -213,7 +211,7 @@ void readPatient(char*** data_vector, char dadosPaciente[50]){
 
 	//allocates memory for the vector that will hold all patient fields
 	int i=0;
-	*data_vector = (char**)malloc(capacity * sizeof(char*));	//allocates memory dinamically for every data type each patient has (ex: id, name, age, phone, email)
+	*data_vector = (char**)malloc(patients_fields * sizeof(char*));	//allocates memory dinamically for every data type each patient has (ex: id, name, age, phone, email)
 	while(fgets(buffer, 50, arquivo) != NULL){			//read every line of the patient's file
 		(*data_vector)[i] = malloc(50 * sizeof(char));		// allocates memory dinamically for individual data types (50 char for id, 50 char for name...)
 		strcpy((*data_vector)[i], buffer);		//copies the line to the data vector
@@ -241,6 +239,83 @@ void copyAllPatients(FILE** registro, FILE** copia){
 	fclose(*copia);
 }
 
+void copyAllConsults(char path[100], FILE** registro, FILE** copia){
+	char buffer[256];
+
+	*registro = fopen(path, "r");
+	*copia = fopen("consultsTEMP.txt", "w");
+	if(*registro == NULL || *copia == NULL){
+		printf("Erro ao manipular arquivos");
+		return;
+	}
+
+	while(fgets(buffer, 256, *registro) != NULL){
+		fprintf(*copia, "%s", buffer);
+	}
+
+	fclose(*registro);
+	fclose(*copia);
+}
+
+void showAllConsults(char idPaciente[50]){
+	char buffer[256];
+	int total_linhas = 0;
+	int display_linhas = 1;
+	
+	char path[100];
+	buildConsultPath(path, idPaciente);
+
+	FILE* arquivo;
+	arquivo = fopen(path, "r");
+	if(arquivo == NULL){
+		printf("Erro ao manipular arquivo");
+		return;
+	}
+
+	if(fgets(buffer, 256, arquivo) == NULL){
+		printf("Nenhuma consulta registrada ainda\n");
+		fclose(arquivo);
+		return;
+	}
+
+	while(fgets(buffer, 256, arquivo) != NULL){
+		if(total_linhas%2 == 0){
+			printf("\n ----- CONSULTA %d ----- \n", display_linhas);
+			printf("Data: 		%s\n", buffer);
+			display_linhas++;
+		} else {
+			printf("Descricao: 	%s\n", buffer);
+		}
+		total_linhas++;
+	}
+}
+
+void selectConsult(char idPaciente[50], int *opcao){
+	char buffer[256];
+	int num_linha = 0;
+
+	showAllConsults(idPaciente);
+
+	printf("Deseja modificar qual consulta?");
+	scanf(" %d", opcao);
+}
+
+void readConsult(char*** data_vector, char idPaciente[50]){
+	char buffer[256];
+
+	char path[100];
+	buildConsultPath(path, idPaciente);
+
+	FILE* arquivo;
+	arquivo = fopen(path, "r");
+	if(arquivo == NULL){
+		printf("Erro ao maniuplar arquivo");
+		return;
+	}
+
+	int i = 0;
+
+}
 
 /*
 	CONSULTS FUNCTIONS
@@ -285,46 +360,81 @@ void verConsultas(){
 	system("clear");
 
 	char idPaciente[50];
-	char buffer[256];
-	int total_linhas = 0;
-	int display_linhas = 1;
 
 	printf("Deseja ver as consultas de que paciente?\n");
 	showAllPatients();
 	selectPatient(idPaciente);
-
-	char path[100];
-	buildConsultPath(path, idPaciente);
-
-	FILE* arquivo;
-	arquivo = fopen(path, "r");
-	if(arquivo == NULL){
-		printf("Erro ao manipular arquivo");
-		return;
-	}
-
-	if(fgets(buffer, 256, arquivo) == NULL){
-		printf("Nenhuma consulta registrada ainda\n");
-		pausar();
-		fclose(arquivo);
-		return;
-	}
-
-	while(fgets(buffer, 256, arquivo) != NULL){
-		if(total_linhas%2 == 0){
-			printf("\n ----- CONSULTA %d ----- \n", display_linhas);
-			printf("Data: 		%s\n", buffer);
-			display_linhas++;
-		} else {
-			printf("Descricao: 	%s\n", buffer);
-		}
-		total_linhas++;
-	}
 	
+	showAllConsults(idPaciente);
 
 	pausar();
 }
 
+void modificarConsulta(){
+	char idPaciente[50];
+	char buffer[256];
+	int total_linhas = 0;
+	int consulta_atual = 1;
+	int opcao_num_consulta = -1;
+	int opcao_campo_a_alterar = -1;
+
+	char nova_data[256];
+	char nova_descricao[256];
+
+	printf("Deseja modificar uma consulta relacionada a qual paciente?\n");
+	showAllPatients();
+	selectPatient(idPaciente);
+
+	selectConsult(idPaciente, &opcao_num_consulta);
+
+	printf("Qual campo deseja alterar?\n");
+	printf("1) Data\n");
+	printf("2) Descricao\n");
+	scanf(" %d", &opcao_campo_a_alterar);
+	switch(opcao_campo_a_alterar){
+		case 1:
+			printf("Informe a nova data: ");
+			scanf(" %s", nova_data);
+			break;
+		case 2:
+			printf("Informe a nova descricao: ");
+			scanf(" %255[^\n]", nova_descricao);
+			break;
+		default:
+			printf("Opcao invalida\n");
+			break;
+	}
+
+	FILE* registro;
+	FILE* copia;
+	char path[100];
+	buildConsultPath(path, idPaciente);
+
+	copyAllConsults(path, &registro, &copia);
+
+	registro = fopen(path, "w");
+	copia = fopen("consultsTEMP.txt", "r");
+
+	int linha_alvo_data = (opcao_num_consulta-1) * 2;
+	int linha_alvo_descricao = linha_alvo_data + 1;
+
+	while(fgets(buffer, 256, copia) != NULL){
+		if(total_linhas == linha_alvo_data){
+			fprintf(registro, "%s\n", nova_data);
+		} else if (total_linhas == linha_alvo_descricao){
+			fprintf(registro, "%s\n", nova_descricao);
+		} else {
+			fprintf(registro, "%s", buffer);
+		}
+		total_linhas++;
+	}
+
+	fclose(registro);
+	fclose(copia);
+	remove("consultsTEMP.txt");
+
+	pausar();
+}
 
 /*
 	PATIENT MANAGEMENT FUNCTIONS
@@ -461,7 +571,7 @@ void modificarPaciente(){
 	printf("3) Telefone\n");
 	printf("4) Email\n");
 	scanf(" %d", &opcao);
-	//based on the user's input, ask what the field is gonna be replaced with (the new name, the new age, etc)
+	//based on the user's input, ask what field is gonna be replaced with (the new name, the new age, etc)
 	switch(opcao){
 		case 1:
 			printf("Informe o novo nome: ");
@@ -639,6 +749,9 @@ void deletarPaciente(){
 
 int main(){
 
+	system("mkdir -p consults_data");
+	system("mkdir -p patients_data");
+
 	int opcao = -1;
 	int continuar = -1;
 	Paciente temp;
@@ -680,6 +793,10 @@ int main(){
 
 			case 6:
 				verConsultas();
+				break;
+
+			case 7:
+				modificarConsulta();
 				break;
 
 			default:
