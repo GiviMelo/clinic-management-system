@@ -278,7 +278,7 @@ void showAllConsults(char idPaciente[50]){
 		return;
 	}
 
-	while(fgets(buffer, 256, arquivo) != NULL){
+	do{
 		if(total_linhas%2 == 0){
 			printf("\n ----- CONSULTA %d ----- \n", display_linhas);
 			printf("Data: 		%s\n", buffer);
@@ -287,7 +287,7 @@ void showAllConsults(char idPaciente[50]){
 			printf("Descricao: 	%s\n", buffer);
 		}
 		total_linhas++;
-	}
+	} while(fgets(buffer, 256, arquivo) != NULL);
 }
 
 void selectConsult(char idPaciente[50], int *opcao){
@@ -300,22 +300,22 @@ void selectConsult(char idPaciente[50], int *opcao){
 	scanf(" %d", opcao);
 }
 
-void readConsult(char*** data_vector, char idPaciente[50]){
-	char buffer[256];
+// void readConsult(char*** data_vector, char idPaciente[50]){
+// 	char buffer[256];
 
-	char path[100];
-	buildConsultPath(path, idPaciente);
+// 	char path[100];
+// 	buildConsultPath(path, idPaciente);
 
-	FILE* arquivo;
-	arquivo = fopen(path, "r");
-	if(arquivo == NULL){
-		printf("Erro ao maniuplar arquivo");
-		return;
-	}
+// 	FILE* arquivo;
+// 	arquivo = fopen(path, "r");
+// 	if(arquivo == NULL){
+// 		printf("Erro ao maniuplar arquivo");
+// 		return;
+// 	}
 
-	int i = 0;
+// 	int i = 0;
 
-}
+// }
 
 /*
 	CONSULTS FUNCTIONS
@@ -416,13 +416,21 @@ void modificarConsulta(){
 	copia = fopen("consultsTEMP.txt", "r");
 
 	int linha_alvo_data = (opcao_num_consulta-1) * 2;
-	int linha_alvo_descricao = linha_alvo_data + 1;
+	int linha_alvo_descricao = (opcao_num_consulta-1) * 2 + 1;
 
 	while(fgets(buffer, 256, copia) != NULL){
 		if(total_linhas == linha_alvo_data){
-			fprintf(registro, "%s\n", nova_data);
+			if(opcao_campo_a_alterar == 1){
+				fprintf(registro, "%s\n", nova_data);
+			} else {
+				fprintf(registro, "%s", buffer);
+			}
 		} else if (total_linhas == linha_alvo_descricao){
-			fprintf(registro, "%s\n", nova_descricao);
+			if(opcao_campo_a_alterar == 2){
+				fprintf(registro, "%s\n", nova_descricao);
+			} else {
+				fprintf(registro, "%s", buffer);
+			}
 		} else {
 			fprintf(registro, "%s", buffer);
 		}
