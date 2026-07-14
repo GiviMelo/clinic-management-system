@@ -61,6 +61,8 @@ void exibirMenu(){
 	printf("4 - Deletar paciente\n");
 	printf("5 - Adicionar consulta\n");
 	printf("6 - Ver consultas\n");
+	printf("7 - Modificar consultas\n");
+	printf("8 - Deletar consulta\n");
 	printf("0 - Sair\n");
 	printf("========================================\n");
 } 
@@ -296,26 +298,9 @@ void selectConsult(char idPaciente[50], int *opcao){
 
 	showAllConsults(idPaciente);
 
-	printf("Deseja modificar qual consulta?");
+	printf("Deseja selecionar qual consulta?\n");
 	scanf(" %d", opcao);
 }
-
-// void readConsult(char*** data_vector, char idPaciente[50]){
-// 	char buffer[256];
-
-// 	char path[100];
-// 	buildConsultPath(path, idPaciente);
-
-// 	FILE* arquivo;
-// 	arquivo = fopen(path, "r");
-// 	if(arquivo == NULL){
-// 		printf("Erro ao maniuplar arquivo");
-// 		return;
-// 	}
-
-// 	int i = 0;
-
-// }
 
 /*
 	CONSULTS FUNCTIONS
@@ -371,6 +356,8 @@ void verConsultas(){
 }
 
 void modificarConsulta(){
+	system("clear");
+
 	char idPaciente[50];
 	char buffer[256];
 	int total_linhas = 0;
@@ -441,6 +428,56 @@ void modificarConsulta(){
 	fclose(copia);
 	remove("consultsTEMP.txt");
 
+	printf("Consulta modificada com sucesso\n");
+	pausar();
+}
+
+void deletarConsulta(){
+	system("clear");
+
+	char idPaciente[50];
+	char buffer[256];
+
+	int num_linha = 0;
+	int opcao_consulta = -1;
+
+	printf("Deseja deletar uma consulta relacionada a qual paciente?\n");
+	showAllPatients();
+	selectPatient(idPaciente);
+
+	selectConsult(idPaciente, &opcao_consulta);
+
+	FILE* registro;
+	FILE* copia;
+	char path[100];
+	buildConsultPath(path, idPaciente);
+
+	copyAllConsults(path, &registro, &copia);
+
+	registro = fopen(path, "w");
+	copia = fopen("consultsTEMP.txt", "r");
+
+	int linha_data = (opcao_consulta-1) * 2;
+	int linha_descricao = (opcao_consulta-1) * 2 + 1;
+
+	int flag = 0;
+	while(fgets(buffer, 256, copia) != NULL){
+		if(num_linha == linha_data){
+			// dont do nothing
+		} else if(num_linha == linha_descricao){
+			// dont do nothing
+		} else {
+			fprintf(registro, "%s", buffer);
+		}
+
+		num_linha++;
+	}
+
+	fclose(registro);
+	fclose(copia);
+	remove("consultsTEMP.txt");
+
+	printf("Consulta removida com sucesso\n");
 	pausar();
 }
 
@@ -749,6 +786,10 @@ void deletarPaciente(){
 	fclose(copia);
 	remove("patients_data/allPatientsTEMP.txt");
 
+	char consultsPath[100];
+	buildConsultPath(consultsPath, idPaciente);
+	remove(consultsPath);
+
 	printf("Paciente deletado com sucesso\n");
 	pausar();
 }
@@ -805,6 +846,10 @@ int main(){
 
 			case 7:
 				modificarConsulta();
+				break;
+
+			case 8:
+				deletarConsulta();
 				break;
 
 			default:
