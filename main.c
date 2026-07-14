@@ -8,13 +8,6 @@
 
 // STRUCTS DECLARATION
 
-// defines the struct data
-// typedef struct{
-// 	int dia;
-// 	int mes;
-// 	int ano;
-// } Data;
-
 // defines the struct consulta
 typedef struct{
 	//Data data;
@@ -89,6 +82,8 @@ void showAllPatients(){
 		}
 		num_linha++;
 	}
+
+	fclose(arquivo);
 }
 
 /*
@@ -290,6 +285,8 @@ void showAllConsults(char idPaciente[50]){
 		}
 		total_linhas++;
 	} while(fgets(buffer, 256, arquivo) != NULL);
+
+	fclose(arquivo);
 }
 
 void selectConsult(char idPaciente[50], int *opcao){
@@ -581,6 +578,11 @@ void verPaciente(){
 	printf("Email: 		%s\n", data_vector[4]);
 	printf("=============================\n");
 
+	for(int i=0; i<patients_fields; i++){
+		free(data_vector[i]);
+	}
+	free(data_vector);
+
 	pausar();
 }
 
@@ -608,6 +610,11 @@ void modificarPaciente(){
 	sscanf(patient_data[2], "%d", &temp.idade);
 	sscanf(patient_data[3], "%s", temp.telefone);
 	sscanf(patient_data[4], "%s", temp.email);
+
+	for(int i=0; i<patients_fields; i++){
+		free(patient_data[i]);
+	}
+	free(patient_data);
 
 	//ask the user whats gonna be changed
 	printf("\nO que deseja alterar?\n");
