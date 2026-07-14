@@ -6,6 +6,12 @@
 #define patients_fields 5
 #define consults_fields 2
 
+#ifdef _WIN32
+#define CLEAR "cls"
+#else
+#define CLEAR "clear"
+#endif
+
 // STRUCTS DECLARATION
 
 // defines the struct consulta
@@ -33,7 +39,7 @@ typedef struct{
 
 // print the welcome message
 void exibirBoasVindas(){
-	system("clear");
+	system(CLEAR);
 	printf("\n ===== SISTEMA DE CADASTRO DE PACIENTES =====\n");
 	printf("Desenvolvido por Lucas Givisiez\n\n");
 }
@@ -304,7 +310,7 @@ void selectConsult(char idPaciente[50], int *opcao){
 */
 
 void novaConsulta(Consulta* c){
-	system("clear");
+	system(CLEAR);
 	defaultConsulta(c);
 
 	char idPaciente[20];
@@ -339,7 +345,7 @@ void novaConsulta(Consulta* c){
 }
 
 void verConsultas(){
-	system("clear");
+	system(CLEAR);
 
 	char idPaciente[50];
 
@@ -353,7 +359,7 @@ void verConsultas(){
 }
 
 void modificarConsulta(){
-	system("clear");
+	system(CLEAR);
 
 	char idPaciente[50];
 	char buffer[256];
@@ -430,7 +436,7 @@ void modificarConsulta(){
 }
 
 void deletarConsulta(){
-	system("clear");
+	system(CLEAR);
 
 	char idPaciente[50];
 	char buffer[256];
@@ -484,7 +490,7 @@ void deletarConsulta(){
 
 // creates a new patient file
 void novoPaciente(Paciente *temp){
-	system("clear");
+	system(CLEAR);
 	defaultPaciente(temp);	//calls the 'constructor'
 
 	int id = calcId(); //calculates the new patient's id
@@ -553,7 +559,7 @@ void novoPaciente(Paciente *temp){
 
 // display a specific patient data
 void verPaciente(){
-	system("clear");
+	system(CLEAR);
 	
 	char idPaciente[50];
 	char linha[50];
@@ -588,7 +594,7 @@ void verPaciente(){
 
 // modify a information of a specific patient
 void modificarPaciente(){
-	system("clear");
+	system(CLEAR);
 
 	char idPaciente[50];
 	char buffer[50];
@@ -725,7 +731,7 @@ void modificarPaciente(){
 
 // deletes a patient from the system
 void deletarPaciente(){
-	system("clear");
+	system(CLEAR);
 
 	char idPaciente[50];
 	char buffer[50];
@@ -805,9 +811,6 @@ void deletarPaciente(){
 
 int main(){
 
-	system("mkdir -p consults_data");
-	system("mkdir -p patients_data");
-
 	int opcao = -1;
 	int continuar = -1;
 	Paciente temp;
@@ -815,7 +818,7 @@ int main(){
 
 	//if the user doesnt select the option 'sair'/0 -- the program will run on loop and display the options menu
 	while(opcao != 0){
-		system("clear");
+		system(CLEAR);
 		exibirBoasVindas();
 		exibirMenu();
 
@@ -823,7 +826,7 @@ int main(){
 
 		switch (opcao) {
 			case 0:
-				system("clear");
+				system(CLEAR);
 				printf("Obrigado por utilizar!\n");
 				break;
 
